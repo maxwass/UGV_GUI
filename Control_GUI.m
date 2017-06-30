@@ -1,3 +1,24 @@
+% rosshutdown;
+% % Start the ROS master.
+% %master = robotics.ros.Core;
+% setenv('ROS_MASTER_URI', '');
+% MasterIP = '192.168.0.21'; %Jackal
+% rosinit(MasterIP)
+% %%
+% % Create a ROS node, which connects to the master.
+% node = robotics.ros.Node('/GUI_max');
+% %%
+% % Create a publisher and send string data. The publisher attaches to the 
+% % node object in the first argument.
+% pub_state = robotics.ros.Publisher(node, '/jackal_state', 'std_msgs/Int8');
+% msg_state = rosmessage('std_msgs/Int8');
+% msg_state.Data = 2;
+% %send(pub_state,msg_state);
+% 
+% pub_waypoint = robotics.ros.Publisher(node, '/jackal_waypoint', 'std_msgs/Float64MultiArray');
+% msg_waypoint = rosmessage('std_msgs/Float64MultiArray');
+
+
 function varargout = Control_GUI(varargin)
 % CONTROL_GUI MATLAB code for Control_GUI.fig
 %      CONTROL_GUI, by itself, creates a new CONTROL_GUI or raises the existing
@@ -179,6 +200,7 @@ for i=1:length(g_obs_cell)
     end
 end
 path = findPathAStar( obs_m, x_map, y_map, start_m, goal_m );
+%waypoint_generator = waypointGenerator(path);
 
 % 
 % for i = 1: size(ID_path_old,1)
@@ -210,11 +232,6 @@ end
 fclose(fileID);
 disp('Path txt saved!!');
 aa=1;
-
-
-
-
-
 
 % --- Executes on button press in rrt.
 function rrt_Callback(hObject, eventdata, handles)
@@ -329,19 +346,20 @@ end
 
 
 
-% --- Executes on button press in saveObs.
-function saveObs_Callback(hObject, eventdata, handles)
-% hObject    handle to saveObs (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-global g_obs_cell;
-FileName = uiputfile('*.dat','Save As');
-fileID = fopen(FileName,'w');
-[nrows, ncols] = size(g_obs_cell{1});
-formatSpec = '%e %e %e %e %e %e %e %e %e %e\n';
-for i=1:length(g_obs_cell)
-   fprintf(fileID, formatSpec, g_obs_cell{i}(:,:)); 
-end
-
-
+% 
+% % --- Executes on button press in saveObs.
+% function saveObs_Callback(hObject, eventdata, handles)
+% % hObject    handle to saveObs (see GCBO)
+% % eventdata  reserved - to be defined in a future version of MATLAB
+% % handles    structure with handles and user data (see GUIDATA)
+% global g_obs_cell;
+% FileName = uiputfile('*.dat','Save As');
+% fileID = fopen(FileName,'w');
+% [nrows, ncols] = size(g_obs_cell{1});
+% formatSpec = '%e %e %e %e %e %e %e %e %e %e\n';
+% for i=1:length(g_obs_cell)
+%    fprintf(fileID, formatSpec, g_obs_cell{i}(:,:)); 
+% end
+% end
+% 
 

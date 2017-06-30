@@ -1,4 +1,4 @@
-arfunction path = findPathAStar( obs, x_map, y_map, start, goal )
+function path = findPathAStar( obs, x_map, y_map, start, goal )
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -105,6 +105,4 @@ for i=1:length(obs)
    obs{i}(:,2) =  obs{i}(:,2) + y_bias;
 end
 
-
 end
-
