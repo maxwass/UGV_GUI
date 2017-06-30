@@ -6,15 +6,31 @@ classdef waypointGenerator
     properties
         path
         nextPointer
+        noPath
     end
     
     methods
         function obj = waypointGenerator(newPath)
-            obj.path = newPath;
+            if (isnan(newPath))
+                obj.noPath = true;
+            else
+                obj.noPath = false;
+                obj.path = newPath;
+            end
             obj.nextPointer = 1;
         end
+%         function obj = waypointGenerator()
+%             obj.noPath = true;
+%         end
+        
         
         function nextWaypoint = getNextWaypoint(this, currentGPS)
+            if (this.noPath == true)
+               disp("WayPoint Generator: No Path Entered!!")
+               nextWaypoint = NaN;
+               return;
+           end
+            
             %reached next waypoint?
             if this.reachedWaypoint(this.path(this.nextPointer, :), currentGPS, 1)
                 %if yes increment nextPointer as long as not at end of path
@@ -29,6 +45,14 @@ classdef waypointGenerator
         
         function b = reachedWaypoint(this, currentGPS, nextWaypointGPS, distanceThreshold)
            %% GPS comes in as [long, lattitude]
+           
+           if (this.noPath == true)
+               disp("WayPoint Generator: No Path Entered!!")
+               b = false;
+               return;
+           end
+           
+           
            %%if we are within threshold (m) then increment pointer
            
            %needs to be tested! - flip input gps for correct long/lat order
@@ -49,7 +73,7 @@ classdef waypointGenerator
           
         end
 
-       function  changePath(this, newPath)
+        function changePath(this, newPath)
             this.path = newPath;
             this.nextPointer = 1;
         end

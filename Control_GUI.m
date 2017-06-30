@@ -1,24 +1,3 @@
-% rosshutdown;
-% % Start the ROS master.
-% %master = robotics.ros.Core;
-% setenv('ROS_MASTER_URI', '');
-% MasterIP = '192.168.0.21'; %Jackal
-% rosinit(MasterIP)
-% %%
-% % Create a ROS node, which connects to the master.
-% node = robotics.ros.Node('/GUI_max');
-% %%
-% % Create a publisher and send string data. The publisher attaches to the 
-% % node object in the first argument.
-% pub_state = robotics.ros.Publisher(node, '/jackal_state', 'std_msgs/Int8');
-% msg_state = rosmessage('std_msgs/Int8');
-% msg_state.Data = 2;
-% %send(pub_state,msg_state);
-% 
-% pub_waypoint = robotics.ros.Publisher(node, '/jackal_waypoint', 'std_msgs/Float64MultiArray');
-% msg_waypoint = rosmessage('std_msgs/Float64MultiArray');
-
-
 function varargout = Control_GUI(varargin)
 % CONTROL_GUI MATLAB code for Control_GUI.fig
 %      CONTROL_GUI, by itself, creates a new CONTROL_GUI or raises the existing
@@ -89,20 +68,39 @@ function Control_GUI_OpeningFcn(hObject, eventdata, handles, varargin)
 % Choose default command line output for Control_GUI
 handles.output = hObject;
 
-% test_timer = timer(...
-%     'ExecutionMode', 'fixedRate', ...       % Run timer repeatedly
-%     'Period', 1, ...                        % Initial period is 1 sec.
-%     'TimerFcn', {@update_display,hObject});
-% start(test_timer)
-% rosshutdown
-% MasterIP = '192.168.0.21'; %master is in this case is with mavros on companinon computer
-% rosinit(MasterIP)
-% global gps;
-% gps = rossubscriber('/mavros/global_position/raw/fix', @GPSCallback);
+rosshutdown
+global node;
+global sub_gps;
+global pub_state;
+global jackal_state;
+global pub_waypoint;
+global MasterIP;
+global waypoint_generator;
+global currentGPS;
 
-global Longitude;
-global Latitude;
-global Altitude;
+%Jackal state: -1 = ESTOP, 0 = wp planning, 1 = wp navigation, 2 = stop & look
+jackal_state = 1;
+
+waypoint_generator = waypointGenerator(NaN);
+
+setenv('ROS_MASTER_URI', '');
+MasterIP = '192.168.0.21'; %Jackal
+rosinit(MasterIP)
+
+% % Create a ROS node, which connects to the master.
+node = robotics.ros.Node('/GUI_max');
+
+% % Create a publisher and send string data. The publisher attaches to the 
+pub_state = robotics.ros.Publisher(node, '/jackal_state', 'std_msgs/Int8');
+pub_waypoint = robotics.ros.Publisher(node, '/jackal_waypoint', 'std_msgs/Float64MultiArray');
+sub_gps = rossubscriber('/navsat/fix');
+
+ros_comm = timer('StartDelay', 0,'TimerFcn', {@ros_comm_callback}, 'Period', .2, 'TasksToExecute', Inf, ...
+          'ExecutionMode', 'fixedSpacing');
+ros_comm.StartFcn = {@ros_comm_callback, 'Starting Ros Communication'};
+%ross_comm.TimerFcn = @ros_comm_callback;
+ross_comm.StopFcn = @ros_comm_cleanup;
+start(ros_comm)
 
 % Update handles structure
 guidata(hObject, handles);
@@ -170,6 +168,8 @@ function aStart_Callback(hObject, eventdata, handles)
 
 addpath('/home/daewon/Documents/MATLAB/ASTAR')
 
+global waypoint_generator;
+
 global g_start;
 global g_goal;
 global g_obs_cell;
@@ -200,7 +200,7 @@ for i=1:length(g_obs_cell)
     end
 end
 path = findPathAStar( obs_m, x_map, y_map, start_m, goal_m );
-%waypoint_generator = waypointGenerator(path);
+waypoint_generator.changePath(metersTollvec(path));
 
 % 
 % for i = 1: size(ID_path_old,1)
