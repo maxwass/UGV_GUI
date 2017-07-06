@@ -51,11 +51,10 @@ function Control_GUI_OpeningFcn(hObject, eventdata, handles, varargin)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 % varargin   command line arguments to Control_GUI (see VARARGIN)
-   global g_obs_cell;
    clear g_obs_cell;
    global g_map_boundary_lat;
    global g_map_boundary_lon;
-   global test_timer;
+
    g_map_boundary_lat = [39.952375    39.951886   ];
    g_map_boundary_lon = [-75.192187    -75.190929   ];
 
@@ -90,18 +89,15 @@ MasterIP = '192.168.0.21'; %Jackal
 rosinit;
 
 % % Create a ROS node, which connects to the master.
-node = robotics.ros.Node('/GUI_97');
+%node = robotics.ros.Node('/GUI_97987');
 
 % % Create a publisher. The publisher attaches to the 
-pub_state = robotics.ros.Publisher(node, '/jackal_state', 'std_msgs/Int8');
-pub_waypoint = robotics.ros.Publisher(node, '/jackal_waypoint', 'std_msgs/Float64MultiArray');
+pub_state = rospublisher('/jackal_state', 'std_msgs/Int8');
+pub_waypoint = rospublisher('/jackal_waypoint', 'std_msgs/Float64MultiArray');
 sub_gps = rossubscriber('/navsat/fix', @GPSCallback);
 
 ros_comm = timer('StartDelay', 0,'TimerFcn', {@ros_comm_callback}, 'Period', .2, 'TasksToExecute', Inf, ...
           'ExecutionMode', 'fixedSpacing');
-ros_comm.StartFcn = {@ros_comm_callback, 'Starting Ros Communication'};
-%ross_comm.TimerFcn = @ros_comm_callback;
-ross_comm.StopFcn = @ros_comm_cleanup;
 start(ros_comm)
 
 % Update handles structure
@@ -147,16 +143,9 @@ function sattlite_Callback(hObject, eventdata, handles)
    
    plot_google_map('maptype', 'satellite')
 
-
-
 % --- Executes on button press in roadmap.
-function roadmap_Callback(hObject, eventdata, handles)
-   
-   
+function roadmap_Callback(hObject, eventdata, handles) 
    plot_google_map('MapType', 'roadmap') 
-
-
-
 
 % --- Executes on button press in aStart.
 function aStart_Callback(hObject, eventdata, handles)
@@ -193,7 +182,7 @@ for i=1:length(g_obs_cell)
     end
 end
 
-path = findPathAStar( obs_m, x_map, y_map, start_m, goal_m );
+path = findPathAStar(obs_m, x_map, y_map, start_m, goal_m );
 waypoint_generator = waypoint_generator.setPath(metersTollvec(path));
 
 % for i = 1: size(ID_path_old,1)
@@ -229,8 +218,6 @@ aa=1;
 % --- Executes on button press in rrt.
 function rrt_Callback(hObject, eventdata, handles)
 
-
-
 % --- Executes on button press in start.
 function start_Callback(hObject, eventdata, handles)
 global g_start;
@@ -244,8 +231,6 @@ hold on
 h_start = plot(start_x, start_y,'o','linewidth',2,'color','r');
 %  plot(start_ll(1), start_ll(2),'o','linewidth',2,'color','b');
 
-
-
 % --- Executes on button press in goal.
 function goal_Callback(hObject, eventdata, handles);
 global g_goal;
@@ -253,8 +238,6 @@ global g_goal;
 hold on
 gl=plot(goal_x, goal_y,'x','linewidth',2,'color','r');
 g_goal = [goal_x, goal_y];
-
-
 
 % --- Executes on button press in obstacle_4pt.
 function obstacle_4pt_Callback(hObject, eventdata, handles)
@@ -273,8 +256,6 @@ hold on
 h4 = fill(obs_x,obs_y,'r');
 set(h4,'facealpha',.5)
 
-
-
 % --- Executes on button press in clear.
 function clear_Callback(hObject, eventdata, handles)
 global start_x start_y;
@@ -290,7 +271,6 @@ clear goal_x;
 clear goal_y;
 clear g_obs_cell;
 
-
 % --- Executes on button press in realtime.
 function realtime_Callback(hObject, eventdata, handles)
 % hObject    handle to realtime (see GCBO)
@@ -305,20 +285,17 @@ if (value == 1.0)
 end
 % Hint:  returns toggle state of realtime
 
-
 % --- Executes on button press in heading.
 function heading_Callback(hObject, eventdata, handles)
 % hObject    handle to heading (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-
 % --- Executes on button press in Attraction.
 function Attraction_Callback(hObject, eventdata, handles)
 % hObject    handle to Attraction (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
 
 % --- Executes on button press in loadObs.
 function loadObs_Callback(hObject, eventdata, handles)
@@ -336,23 +313,4 @@ for i=1:size(data,1)
     h4 = fill(g_obs_cell{i}(:,1),g_obs_cell{i}(:,2),'r');
     set(h4,'facealpha',.5)
 end
-
-
-
-% 
-% % --- Executes on button press in saveObs.
-% function saveObs_Callback(hObject, eventdata, handles)
-% % hObject    handle to saveObs (see GCBO)
-% % eventdata  reserved - to be defined in a future version of MATLAB
-% % handles    structure with handles and user data (see GUIDATA)
-% global g_obs_cell;
-% FileName = uiputfile('*.dat','Save As');
-% fileID = fopen(FileName,'w');
-% [nrows, ncols] = size(g_obs_cell{1});
-% formatSpec = '%e %e %e %e %e %e %e %e %e %e\n';
-% for i=1:length(g_obs_cell)
-%    fprintf(fileID, formatSpec, g_obs_cell{i}(:,:)); 
-% end
-% end
-% 
 

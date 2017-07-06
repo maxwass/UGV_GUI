@@ -13,7 +13,7 @@ global jackal_state;
 msg_waypoint = rosmessage('std_msgs/Float64MultiArray');
 [waypoint_generator, msg_waypoint.Data, endOfPath] = waypoint_generator.getNextWaypoint([msg_gps.Longitude, msg_gps.Latitude]);
 
-if endOfpath 
+if endOfPath 
 end
 
 msg_state = rosmessage('std_msgs/Int8');
