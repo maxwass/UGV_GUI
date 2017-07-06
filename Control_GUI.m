@@ -90,7 +90,7 @@ MasterIP = '192.168.0.21'; %Jackal
 rosinit;
 
 % % Create a ROS node, which connects to the master.
-node = robotics.ros.Node('/GUI_872567');
+node = robotics.ros.Node('/GUI_8734367');
 
 % % Create a publisher. The publisher attaches to the 
 pub_state = robotics.ros.Publisher(node, '/jackal_state', 'std_msgs/Int8');

@@ -65,6 +65,7 @@ classdef waypointGenerator
            
            distM  = pdist([xy_waypoint; xy_jackal], 'euclidean');
            
+           distE = findDistance( xy_waypoint, xy_jackal );
            
            if(distM < distanceThreshold)
                b = true;
