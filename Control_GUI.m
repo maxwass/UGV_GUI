@@ -71,13 +71,13 @@ handles.output = hObject;
 rosshutdown
 global node;
 global sub_gps;
+global pub_waypoint;
 global pub_state;
 global jackal_state;
-global pub_waypoint;
-global MasterIP;
 global waypoint_generator;
-global currentGPS;
 global msg_gps;
+
+addpath('astar', 'communication', 'lib');
 
 %Jackal state: -1 = ESTOP, 0 = wp planning, 1 = wp navigation, 2 = stop & look
 jackal_state = 1;
@@ -90,7 +90,7 @@ MasterIP = '192.168.0.21'; %Jackal
 rosinit;
 
 % % Create a ROS node, which connects to the master.
-node = robotics.ros.Node('/GUI_8734367');
+node = robotics.ros.Node('/GUI_97');
 
 % % Create a publisher. The publisher attaches to the 
 pub_state = robotics.ros.Publisher(node, '/jackal_state', 'std_msgs/Int8');
@@ -160,8 +160,6 @@ function roadmap_Callback(hObject, eventdata, handles)
 
 % --- Executes on button press in aStart.
 function aStart_Callback(hObject, eventdata, handles)
-
-addpath('/home/daewon/Documents/MATLAB/ASTAR')
 
 global waypoint_generator;
 
@@ -237,7 +235,7 @@ function rrt_Callback(hObject, eventdata, handles)
 function start_Callback(hObject, eventdata, handles)
 global g_start;
 global h_start;
-[start_x,start_y] = ginput(1)
+[start_x,start_y] = ginput(1);
  g_start = [start_x, start_y];
 %  start_m = (llToMeters(g_start(1), g_start(2)));
 %  start_ll = metersToll(start_m);
@@ -251,9 +249,9 @@ h_start = plot(start_x, start_y,'o','linewidth',2,'color','r');
 % --- Executes on button press in goal.
 function goal_Callback(hObject, eventdata, handles);
 global g_goal;
-[goal_x,goal_y] = ginput(1)
+[goal_x,goal_y] = ginput(1);
 hold on
-gl=plot(goal_x, goal_y,'x','linewidth',2,'color','r')
+gl=plot(goal_x, goal_y,'x','linewidth',2,'color','r');
 g_goal = [goal_x, goal_y];
 
 
