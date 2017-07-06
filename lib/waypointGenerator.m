@@ -7,9 +7,12 @@ classdef waypointGenerator
         path = []
         nextPointer
         noPath
+
     end
     
     methods
+        %Constructor: feed in a path. Path can be NaN upon initialization.
+        %If path is NaN set noPath flag, if path is not NaN regular init
         function obj = waypointGenerator(newPath)
             if (isnan(newPath))
                 obj.noPath = true;
@@ -20,57 +23,53 @@ classdef waypointGenerator
             obj.nextPointer = 1;
         end
         
-        function [obj, nextWaypoint] = getNextWaypoint(obj, currentGPS)
+        %getNextWaypoint: takes in currentGPS and compares it to
+        %nextWaypoint. If they are withing some threshold, then increment
+        %the index in the path to output the next waypoint
+        function [obj, nextWaypoint, endOFPath] = getNextWaypoint(obj, currentGPS)
             if (obj.noPath == true)
-               %disp("WayPoint Generator: No Path Entered!!")
                nextWaypoint = NaN;
                return;
            end
             
             %reached next waypoint?
+            %if yes increment nextPointer as long as not at end of path
+            %if we have reached the end of the path, tell user
             next_waypoint = obj.path(obj.nextPointer, :);
             reached_waypoint = obj.reachedWaypoint(currentGPS, next_waypoint, 1);
             
             if reached_waypoint
-                %if yes increment nextPointer as long as not at end of path
                if(obj.nextPointer < size(obj.path,1))
                    obj.nextPointer = (obj.nextPointer + 1); 
                else
                    %TRIGGER END OF PATH
+                   endOFPath = true;
                end   
             end
             nextWaypoint = obj.path(obj.nextPointer,:);
         end
         
-        function b = reachedWaypoint(this, currentGPS, nextWaypointGPS, distanceThreshold)
-           % GPS comes in as [long, lattitude]
+        %reachedWaypoint: compare the distance between current and waypoint
+        %GPS coordinates. If we are within distThreshold then increment 
+        %pointer in path
+        %GPS comes in as [long, lattitude]
+        function reached = reachedWaypoint(this, currentGPS, nextWaypointGPS, distanceThreshold)
            
            if (this.noPath == true)
                disp("WayPoint Generator: No Path Entered!!")
-               b = false;
+               reached = false;
                return;
            end
-           
-           
-           %%if we are within threshold (m) then increment pointer
-           %%SAME INPUT NOT GIVING ZZERO DISTANCE OUPUTS IN EITHER DIST
-           %%FUNCTION
-           
-           %needs to be tested! - flip input gps for correct long/lat order
-           [distKM] = lldistkm(fliplr(currentGPS), fliplr(nextWaypointGPS));
-           distMP = distKM*1000;
-           
+
            xy_waypoint = llToMeters(nextWaypointGPS(1),nextWaypointGPS(2));
            xy_jackal = llToMeters(currentGPS(1), currentGPS(2));
-           
-           distM  = pdist([xy_waypoint; xy_jackal], 'euclidean');
-           
-           distE = findDistance( xy_waypoint, xy_jackal );
+           %distM  = pdist([xy_waypoint; xy_jackal], 'euclidean');
+           distM = findDistance( xy_waypoint, xy_jackal );
            
            if(distM < distanceThreshold)
-               b = true;
+               reached = true;
            else
-               b = false;
+               reached = false;
            end
           
         end
@@ -79,14 +78,6 @@ classdef waypointGenerator
             obj.path = newPath;
             obj.nextPointer = 1;
             obj.noPath = false;
-        end
-        
-        function obj = setNextPointer(obj, index)
-            obj.nextPointer = index;
-        end
-        
-        function i = getNextPointer(obj)
-            i = obj.nextPointer;
         end
         
     end

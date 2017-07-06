@@ -1,4 +1,0 @@
-clear all
-close all
-
-h = plot(3,4,'o')
