@@ -77,6 +77,7 @@ global pub_waypoint;
 global MasterIP;
 global waypoint_generator;
 global currentGPS;
+global msg_gps;
 
 %Jackal state: -1 = ESTOP, 0 = wp planning, 1 = wp navigation, 2 = stop & look
 jackal_state = 1;
@@ -85,15 +86,16 @@ waypoint_generator = waypointGenerator(NaN);
 
 setenv('ROS_MASTER_URI', '');
 MasterIP = '192.168.0.21'; %Jackal
-rosinit(MasterIP)
+%rosinit(MasterIP)
+rosinit;
 
 % % Create a ROS node, which connects to the master.
-node = robotics.ros.Node('/GUI_max');
+node = robotics.ros.Node('/GUI_872567');
 
-% % Create a publisher and send string data. The publisher attaches to the 
+% % Create a publisher. The publisher attaches to the 
 pub_state = robotics.ros.Publisher(node, '/jackal_state', 'std_msgs/Int8');
 pub_waypoint = robotics.ros.Publisher(node, '/jackal_waypoint', 'std_msgs/Float64MultiArray');
-sub_gps = rossubscriber('/navsat/fix');
+sub_gps = rossubscriber('/navsat/fix', @GPSCallback);
 
 ros_comm = timer('StartDelay', 0,'TimerFcn', {@ros_comm_callback}, 'Period', .2, 'TasksToExecute', Inf, ...
           'ExecutionMode', 'fixedSpacing');
@@ -110,15 +112,9 @@ guidata(hObject, handles);
 
 function GPSCallback(src, message)
     %%ROS callback function for recieving raw GPS data
-    global Longitude;
-    global Latitude;
-    global Altitude;
-    Longitude = message.Longitude;
-    Latitude  = message.Latitude;
-    Altitude  = message.Altitude;
-    %fprintf('Latitude: %f, Longitude: %f \n', Latitude, Longitude);
-    pause(1);
-    drawnow;
+    global msg_gps;
+    msg_gps = message;
+    %fprintf('lat: %d, long: %d \n', msg_gps.Longitude, msg_gps.Latitude);
 
 
 % START USER CODE
@@ -128,10 +124,9 @@ function update_display(hObject, eventdata, handles)
 %disp('hello')
 % a=1
 global h_start;
-global Longitude;
-global Latitude;
- set(h_start,'XData',Longitude);
- set(h_start,'YData',Latitude);
+global msg_gps;
+ set(h_start,'XData',msg_gps.Longitude);
+ set(h_start,'YData',msg_gps.Latitude);
 % END USER CODE
 
 
@@ -199,10 +194,10 @@ for i=1:length(g_obs_cell)
         obs_m{i}(j,:) = round(llToMeters(g_obs_cell{i}(j,1), g_obs_cell{i}(j,2)));
     end
 end
-path = findPathAStar( obs_m, x_map, y_map, start_m, goal_m );
-waypoint_generator.changePath(metersTollvec(path));
 
-% 
+path = findPathAStar( obs_m, x_map, y_map, start_m, goal_m );
+waypoint_generator = waypoint_generator.setPath(metersTollvec(path));
+
 % for i = 1: size(ID_path_old,1)
 %     set(ID_path_old(i),'marker','none');
 % end
