@@ -287,3 +287,72 @@ for i=1:size(data,1)
     set(h4,'facealpha',.5)
 end
 
+% --- Executes on button press in saveObs.
+function saveObs_Callback(hObject, eventdata, handles)
+global g_obs_cell;
+FileName = uiputfile('*.dat','Save As');
+fileID = fopen(FileName,'w');
+[nrows, ncols] = size(g_obs_cell{1});
+formatSpec = '%e %e %e %e %e %e %e %e %e %e\n';
+for i=1:length(g_obs_cell)
+   fprintf(fileID, formatSpec, g_obs_cell{i}(:,:)); 
+end
+
+% --- Executes on button press in GO.
+function GO_Callback(hObject, eventdata, handles)
+global jackal_state;
+global pub_state;
+jackal_state.Data = 1;
+send(pub_state,jackal_state);
+
+% --- Executes on button press in LOOK.
+function LOOK_Callback(hObject, eventdata, handles)
+global pub_state;
+global jackal_state;
+global lookPub;
+global msglook; % look
+
+[look_x,look_y] = ginput(1);
+hold on
+plot(look_x, look_y,'x','linewidth',2,'color','r');
+
+jackal_state.Data = 2;
+send(pub_state,jackal_state);
+
+msglook.Data = [look_y, look_x];
+send(lookPub,msglook);
+
+% --- Executes on button press in WP.
+function WP_Callback(hObject, eventdata, handles)
+global pub_waypoint;
+global msgWP; % WP
+[WP_x,WP_y] = ginput(1);
+hold on
+plot(WP_x, WP_y,'x','linewidth',2,'color','r');
+msgWP.Data = [WP_y, WP_x];
+send(pub_waypoint,msgWP);
+
+% --- Executes on button press in MANUAL.
+function MANUAL_Callback(hObject, eventdata, handles)
+global pub_state;
+global jackal_state;
+jackal_state.Data = 3;
+send(pub_state,jackal_state);
+
+% --- Executes on button press in simplify.
+function simplify_Callback(hObject, eventdata, handles)
+global path; %will FAIL because path is not global
+global path_s;
+threshold = 1.3;
+path_s = simplyfyPath( path, threshold );
+
+for i = 1: size(path_s,1)
+   path_ll(i,:) =  metersToll(path_s(i,:));
+   ID_path(i) = plot(path_ll(i,1), path_ll(i,2),'--rs',...
+    'LineWidth',2,...
+    'MarkerSize',10,...
+    'MarkerEdgeColor','r',...
+    'MarkerFaceColor',[0.5,0.5,0.5]);
+end
+
+
