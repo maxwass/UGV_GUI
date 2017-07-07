@@ -69,6 +69,7 @@ function Control_GUI_OpeningFcn(hObject, eventdata, handles, varargin)
     global sub_gps;
     global pub_waypoint;
     global pub_state;
+    global pub_look;
     global jackal_state;
     global waypoint_generator;
     global msg_gps;
@@ -88,6 +89,8 @@ function Control_GUI_OpeningFcn(hObject, eventdata, handles, varargin)
 % % Create a publisher. The publisher attaches to the 
     pub_state = rospublisher('/jackal_state', 'std_msgs/Int8');
     pub_waypoint = rospublisher('/jackal_waypoint', 'std_msgs/Float64MultiArray');
+    pub_look = rospublisher('/jackal_look','std_msgs/Float64MultiArray');
+    
     sub_gps = rossubscriber('/navsat/fix', @GPSCallback);
 % timer setup for publishing
     ros_comm = timer('StartDelay', 0,'TimerFcn', {@ros_comm_callback}, 'Period', .2, 'TasksToExecute', Inf, ...
@@ -298,46 +301,72 @@ for i=1:length(g_obs_cell)
    fprintf(fileID, formatSpec, g_obs_cell{i}(:,:)); 
 end
 
+% --- Executes on button press in STOP.
+function STOP_Callback(hObject, eventdata, handles)
+
+global jackal_state;
+jackal_state = 0;
+%this will happen in the callback: redundant
+% global pub_state;
+% send(pub_state,jackal_state);
+
 % --- Executes on button press in GO.
 function GO_Callback(hObject, eventdata, handles)
 global jackal_state;
-global pub_state;
-jackal_state.Data = 1;
-send(pub_state,jackal_state);
+
+jackal_state = 1;
+
+%this will happen in the callback: redundant
+% global pub_state;
+%msg_state = rosmessage('std_msgs/Int8');
+%msg_state.Data = jackal_state;
+% send(pub_state,msg_state);
 
 % --- Executes on button press in LOOK.
 function LOOK_Callback(hObject, eventdata, handles)
 global pub_state;
 global jackal_state;
-global lookPub;
-global msglook; % look
+global pub_look;
 
 [look_x,look_y] = ginput(1);
 hold on
 plot(look_x, look_y,'x','linewidth',2,'color','r');
 
-jackal_state.Data = 2;
-send(pub_state,jackal_state);
+jackal_state = 2;
+msg_state = rosmessage('std_msgs/Int8');
+msg_state.Data = jackal_state;
 
+%much of this is redundant as well! should be in ros_comm_callback!!
+msglook = rosmessage(pub_look);
 msglook.Data = [look_y, look_x];
-send(lookPub,msglook);
+
+send(pub_state,msg_state);
+send(pub_look,msglook);
 
 % --- Executes on button press in WP.
 function WP_Callback(hObject, eventdata, handles)
 global pub_waypoint;
-global msgWP; % WP
+msg_waypoint = rosmessage('std_msgs/Float64MultiArray');
+
 [WP_x,WP_y] = ginput(1);
 hold on
 plot(WP_x, WP_y,'x','linewidth',2,'color','r');
-msgWP.Data = [WP_y, WP_x];
-send(pub_waypoint,msgWP);
+msg_waypoint.Data = [WP_y, WP_x];
+
+
+%NOTE: WILL BE OVERWRITTEN IN THE ROS_COMM_CALLBACK!
+send(pub_waypoint,msg_waypoint);
 
 % --- Executes on button press in MANUAL.
 function MANUAL_Callback(hObject, eventdata, handles)
 global pub_state;
 global jackal_state;
-jackal_state.Data = 3;
-send(pub_state,jackal_state);
+jackal_state = 3;
+
+%redundant: send will be called in ros_comm_callback
+%msg_state = rosmessage('std_msgs/Int8');
+%msg_state.Data = jackal_state;
+%send(pub_state,msg_state);
 
 % --- Executes on button press in simplify.
 function simplify_Callback(hObject, eventdata, handles)
