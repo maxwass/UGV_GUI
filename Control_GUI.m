@@ -192,10 +192,6 @@ for i = 1: size(path,1)
     'MarkerFaceColor',[0.5,0.5,0.5]);
 end
 
-
-% --- Executes on button press in rrt.
-function rrt_Callback(hObject, eventdata, handles)
-
 % --- Executes on button press in start.
 function start_Callback(hObject, eventdata, handles)
 global g_start;
@@ -207,7 +203,6 @@ global h_start;
 
 hold on
 h_start = plot(start_x, start_y,'o','linewidth',2,'color','r');
-%  plot(start_ll(1), start_ll(2),'o','linewidth',2,'color','b');
 
 % --- Executes on button press in goal.
 function goal_Callback(hObject, eventdata, handles);
@@ -240,34 +235,37 @@ global start_x start_y;
 global goal_x  goal_y;
 global g_obs_cell;
 global test_timer;
-delete(test_timer);
+%delete(test_timer);
+cnt = 1;
+for i=1:size(handles.axes1.Children,1)
+    isMark = findprop(handles.axes1.Children(cnt),'Marker');
 
-clear all
-clear start_x;
-clear start_y;
-clear goal_x;
-clear goal_y;
-clear g_obs_cell;
+    %isMark = findprop(handles.axes1.Children(i),'Marker');
+    if(~isempty(isMark))
+        %set(handles.axes1.Children(i),'Marker','none');
+        delete(handles.axes1.Children(cnt));
+    elseif(isempty(isMark))
+            cnt = cnt + 1;
+    end
+   
+    
+end
+
+g_obs_cell = [];
+goal_x = [];
+goal_y = [];
+start_x = [];
+start_y = [];
 
 % --- Executes on button press in realtime.
 function realtime_Callback(hObject, eventdata, handles)
-% hObject    handle to realtime (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
 global g_start;
-global Longitude;
-global Latitude;
+global msg_gps;
+
 value=get(hObject,'Value');
 if (value == 1.0)
-    g_start = [Longitude,Latitude];
+    g_start = [msg_gps.Longitude,msg_gps.Latitude];
 end
-% Hint:  returns toggle state of realtime
-
-% --- Executes on button press in heading.
-function heading_Callback(hObject, eventdata, handles)
-% hObject    handle to heading (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
 
 % --- Executes on button press in Attraction.
 function Attraction_Callback(hObject, eventdata, handles)
@@ -277,9 +275,6 @@ function Attraction_Callback(hObject, eventdata, handles)
 
 % --- Executes on button press in loadObs.
 function loadObs_Callback(hObject, eventdata, handles)
-% hObject    handle to loadObs (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
 global g_obs_cell;
 FileName = uigetfile('*.dat');
 data = load(FileName);
