@@ -58,53 +58,49 @@ function Control_GUI_OpeningFcn(hObject, eventdata, handles, varargin)
    g_map_boundary_lat = [39.952375    39.951886   ];
    g_map_boundary_lon = [-75.192187    -75.190929   ];
 
-%    g_map_boundary_lat = [39.952375    39.952186   ];
-%    g_map_boundary_lon = [-75.192187    -75.191929   ];
    plot(g_map_boundary_lon,g_map_boundary_lat,'.')
    plot_google_map
-%[x,y] = ginput(4)
+%  [x,y] = ginput(4)
 
 % Choose default command line output for Control_GUI
-handles.output = hObject;
+    handles.output = hObject;
 
-rosshutdown
-global node;
-global sub_gps;
-global pub_waypoint;
-global pub_state;
-global jackal_state;
-global waypoint_generator;
-global msg_gps;
+    rosshutdown
+    global sub_gps;
+    global pub_waypoint;
+    global pub_state;
+    global jackal_state;
+    global waypoint_generator;
+    global msg_gps;
 
-addpath('astar', 'communication', 'lib');
+    addpath('astar', 'communication', 'lib');
 
-%Jackal state: -1 = ESTOP, 0 = wp planning, 1 = wp navigation, 2 = stop & look
-jackal_state = 1;
+    %Jackal state: -1 = ESTOP, 0 = wp planning, 1 = wp navigation, 2 = stop & look
+    jackal_state = 1;
+    waypoint_generator = waypointGenerator(NaN);
 
-waypoint_generator = waypointGenerator(NaN);
-
-setenv('ROS_MASTER_URI', '');
-MasterIP = '192.168.0.21'; %Jackal
-%rosinit(MasterIP)
-rosinit;
-
-% % Create a ROS node, which connects to the master.
-%node = robotics.ros.Node('/GUI_97987');
+    %ROS setup
+    setenv('ROS_MASTER_URI', '');
+    MasterIP = '192.168.0.21'; %Jackal
+    %rosinit(MasterIP)
+    rosinit;
 
 % % Create a publisher. The publisher attaches to the 
-pub_state = rospublisher('/jackal_state', 'std_msgs/Int8');
-pub_waypoint = rospublisher('/jackal_waypoint', 'std_msgs/Float64MultiArray');
-sub_gps = rossubscriber('/navsat/fix', @GPSCallback);
-
-ros_comm = timer('StartDelay', 0,'TimerFcn', {@ros_comm_callback}, 'Period', .2, 'TasksToExecute', Inf, ...
+    pub_state = rospublisher('/jackal_state', 'std_msgs/Int8');
+    pub_waypoint = rospublisher('/jackal_waypoint', 'std_msgs/Float64MultiArray');
+    sub_gps = rossubscriber('/navsat/fix', @GPSCallback);
+% timer setup for publishing
+    ros_comm = timer('StartDelay', 0,'TimerFcn', {@ros_comm_callback}, 'Period', .2, 'TasksToExecute', Inf, ...
           'ExecutionMode', 'fixedSpacing');
-start(ros_comm)
+    start(ros_comm)
+    
+% timer setup for drawing to screen   
+    updateDisplay = timer('StartDelay', 0,'TimerFcn', {@update_display_timer_callback}, 'Period', 1, 'TasksToExecute', Inf, ...
+          'ExecutionMode', 'fixedSpacing');
+    start(updateDisplay)
 
 % Update handles structure
-guidata(hObject, handles);
-%stop(test_timer)
-% UIWAIT makes Control_GUI wait for user response (see UIRESUME)
-% uiwait(handles.figure1);
+    guidata(hObject, handles);
 
 function GPSCallback(src, message)
     %%ROS callback function for recieving raw GPS data
@@ -112,9 +108,7 @@ function GPSCallback(src, message)
     msg_gps = message;
     %fprintf('lat: %d, long: %d \n', msg_gps.Longitude, msg_gps.Latitude);
 
-
-% START USER CODE
-function update_display(hObject, eventdata, handles)
+function update_display_timer_callback(hObject, eventdata, handles)
 % Timer timer1 callback, called each time timer iterates.
 % Gets surface Z data, adds noise, and writes it back to surface object.
 %disp('hello')
@@ -123,8 +117,7 @@ global h_start;
 global msg_gps;
  set(h_start,'XData',msg_gps.Longitude);
  set(h_start,'YData',msg_gps.Latitude);
-% END USER CODE
-
+ drawnow;
 
 % --- Outputs from this function are returned to the command line.
 function varargout = Control_GUI_OutputFcn(hObject, eventdata, handles) 
