@@ -35,7 +35,7 @@ if true
     if isnan(msg_waypoint.Data)
         fprintf(' next_waypoint: NAN \n');
     else
-       fprintf(' next_waypoint: %f, %f, index %i \n\n', msg_waypoint.Data(1), msg_waypoint.Data(2), waypoint_generator.getNextPointer());
+       fprintf(' next_waypoint: %f, %f, \n Index in Path: %i \n\n', msg_waypoint.Data(1), msg_waypoint.Data(2), waypoint_generator.getIndex());
     end
 end
 

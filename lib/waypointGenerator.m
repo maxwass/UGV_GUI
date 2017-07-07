@@ -26,8 +26,11 @@ classdef waypointGenerator
         %getNextWaypoint: takes in currentGPS and compares it to
         %nextWaypoint. If they are withing some threshold, then increment
         %the index in the path to output the next waypoint
-        function [obj, nextWaypoint, endOFPath] = getNextWaypoint(obj, currentGPS)
-            if (obj.noPath == true)
+        function [obj, nextWaypoint, endOfPath] = getNextWaypoint(obj, currentGPS)
+            
+           endOfPath = false;
+           
+           if (obj.noPath == true)
                nextWaypoint = NaN;
                return;
            end
@@ -43,7 +46,7 @@ classdef waypointGenerator
                    obj.nextPointer = (obj.nextPointer + 1); 
                else
                    %TRIGGER END OF PATH
-                   endOFPath = true;
+                   endOfPath = true;
                end   
             end
             nextWaypoint = obj.path(obj.nextPointer,:);
@@ -79,6 +82,11 @@ classdef waypointGenerator
             obj.nextPointer = 1;
             obj.noPath = false;
         end
+        
+        function index = getIndex(obj)
+            index = obj.nextPointer;
+        end
+        
         
     end
     
