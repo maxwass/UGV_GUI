@@ -129,13 +129,11 @@ function varargout = Control_GUI_OutputFcn(hObject, eventdata, handles)
 % Get default command line output from handles structure
 varargout{1} = handles.output;
 
-
 % --- Executes on button press in sattlite.
 function sattlite_Callback(hObject, eventdata, handles)
    
    
    plot_google_map('maptype', 'satellite')
-
 % --- Executes on button press in roadmap.
 function roadmap_Callback(hObject, eventdata, handles) 
    plot_google_map('MapType', 'roadmap') 
@@ -175,12 +173,9 @@ for i=1:length(g_obs_cell)
     end
 end
 
-path = findPathAStar(obs_m, x_map, y_map, start_m, goal_m );
+path = findPathAStar(obs_m, x_map, y_map, start_m, goal_m);
 waypoint_generator = waypoint_generator.setPath(metersTollvec(path));
 
-% for i = 1: size(ID_path_old,1)
-%     set(ID_path_old(i),'marker','none');
-% end
 for i=1:size(handles.axes1.Children,1)
     isMark = findprop(handles.axes1.Children(i),'Marker');
     if(~isempty(isMark))
@@ -196,17 +191,7 @@ for i = 1: size(path,1)
     'MarkerEdgeColor','g',...
     'MarkerFaceColor',[0.5,0.5,0.5]);
 end
-fileID = fopen('path.txt','w');
 
-
-for ii=1:size(path_ll,1)
-    fprintf(fileID,'%12.8f\t%12.8f\n',path_ll(ii,1),path_ll(ii,2));
-end
-
-%fprintf(fileID,'%12.8f\t%12.8f\n',path_ll);
-fclose(fileID);
-disp('Path txt saved!!');
-aa=1;
 
 % --- Executes on button press in rrt.
 function rrt_Callback(hObject, eventdata, handles)
